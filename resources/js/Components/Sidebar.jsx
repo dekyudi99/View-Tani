@@ -4,8 +4,8 @@ import { LayoutDashboard, HardDrive, History, FileText } from 'lucide-react';
 
 export default function Sidebar() {
     return (
-        <div className="bg-gray-800 text-white w-64 min-h-screen p-5">
-            <h1 className="text-xl font-bold mb-6">Nama Website</h1>
+        <div className="bg-gray-800 text-white w-64 min-h-screen p-5 h-full">
+            <h1 className="text-xl font-bold mb-6">View Tani</h1>
             <ul>
                 <li className="mb-4">
                     <Link href="/dashboard" className="flex items-center space-x-2 hover:text-gray-300">
