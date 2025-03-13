@@ -4,10 +4,12 @@ import TopContainer from '@/Components/TopContainer'
 import BottomContainer from '@/Components/BottomContainer'
 import { Gauge } from 'lucide-react'
 import { BarChart } from 'lucide-react'
+import { Head } from '@inertiajs/react'
 
 const History = () => {
   return (
     <div>
+        <Head title="History" />
         <Layouut header="History">
             <TopContainer icon={Gauge} title="Parangkat 1">
                 {[1, 2, 3, 4, 5].map((num) => (
