@@ -36,6 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/ujicoba', [ViewController::class, 'index']);
+Route::get('/dashboard', [ViewController::class, 'index']);
 
 require __DIR__.'/auth.php';

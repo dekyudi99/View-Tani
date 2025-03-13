@@ -9,6 +9,6 @@ class ViewController extends Controller
 {
     public function index()
     {
-        return Inertia::render('frontpage/Ujicoba');
+        return Inertia::render('Frontpage/Dashboard');
     }
 }
