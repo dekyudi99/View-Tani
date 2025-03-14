@@ -59,7 +59,7 @@ const Report = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  {[1, 2, 3].map((num) => (
                     <tr key={num} className="text-center">
                       <td className="border p-2">{num}</td>
                       <td className="border p-2">1.0</td>
@@ -74,7 +74,7 @@ const Report = () => {
               </table>
             </div>
             <div className="mt-2 flex justify-between">
-              <p>Showing 1 to 8 of 4,000 entries</p>
+              <p>Showing 1 to 3 of 4,000 entries</p>
               <div className="space-x-2">
                 <button className="px-2 py-1 border rounded">Previous</button>
                 <button className="px-2 py-1 border rounded">1</button>
@@ -90,4 +90,4 @@ const Report = () => {
   );
 };
 
-export default Report;
+export default Report
