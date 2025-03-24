@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import { LayoutDashboard, HardDrive, History, FileText } from 'lucide-react';
 
-export default function Sidebar() {
+export default function Sidebar({ isVisible }) {
     return (
-        <div className="bg-gray-800 text-white w-64 min-h-screen p-5 h-full">
+        <div className={`bg-gray-800 text-white w-64 min-h-screen p-5 h-full fixed transition-transform ease-in-out duration-300 ${isVisible ? 'translate-x-0' : '-translate-x-full'}`}        >
             <h1 className="text-xl font-bold mb-6">View Tani</h1>
             <ul>
                 <li className="mb-4">
