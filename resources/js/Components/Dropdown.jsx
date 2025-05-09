@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, createContext, useContext, Fragment } from 'react';
 import { Link } from '@inertiajs/react';
 import { Transition } from '@headlessui/react';

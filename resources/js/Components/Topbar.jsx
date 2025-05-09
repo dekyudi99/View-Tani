@@ -1,16 +1,14 @@
-import React from 'react';
-import { Menu, UserCircle } from 'lucide-react';
+import React, { Children } from 'react';
 
-export default function Topbar({ header, setView }) {
+export default function Topbar({ children }) {
     return (
-        <div className={`bg-gray-300 p-4 flex justify-between items-center shadow-md sticky top-0`}>
-            <div className='flex items-center flex-row gap-4'>
-                <button className="text-gray-900" onClick={() => setView((prev) => !prev)}>
-                    <Menu size={24} />
-                </button>
-                <h2 className="text-lg font-bold">{header}</h2>
-            </div>
-            <UserCircle size={24} className="text-gray-900" />
+        <div>
+            <nav className="flex justify-between items-center px-8 py-4 shadow-sm">
+                <div className="text-xl font-bold text-blue-700">ViewTani</div>
+                <div className="space-x-6">
+                    {children}
+                </div>
+            </nav>
         </div>
     );
 }

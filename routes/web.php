@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ViewController;
+use App\Http\Controllers\IoTController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,21 +25,21 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-Route::get('/dashboard', [ViewController::class, 'dashboard']);
-Route::get('/device', [ViewController::class, 'device']);
-Route::get('/history', [ViewController::class, 'history']);
-Route::get('/report', [ViewController::class, 'report']);
+    Route::get('/dashboard', [IoTController::class, 'dashboard'])->name('dashboard');
+    Route::get('/get-latest', [IoTController::class, 'getLatest'])->name('get.latest');
+
+    Route::post('/lampu/hijau', [IoTController::class, 'lampuHijau'])->name('hijau');
+    Route::post('/lampu/kuning', [IoTController::class, 'lampuKuning'])->name('kuning');
+    Route::post('/lampu/merah', [IoTController::class, 'lampuMerah'])->name('merah');
+    Route::post('/restart', [IoTController::class, 'sendRestart'])->name('restart');
+
+});
 
 require __DIR__.'/auth.php';
