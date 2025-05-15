@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Head, usePage, useForm } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import axios from "axios";
-import { Line } from "react-chartjs-2";
+import mqtt from "mqtt";
+import ToggleSwitch from "../../Components/ToggleSwitch";
 import Topbar from "../../Components/Topbar";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -13,23 +15,73 @@ import {
   Legend as ChartLegendPlugin,
 } from "chart.js";
 
-// Registrasi plugin chart.js
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, ChartLegendPlugin);
 
 export default function Dashboard() {
   const { chart, latest } = usePage().props;
-  const { post } = useForm();
   const [latestData, setLatestData] = useState(latest);
+  const [lampuStatus, setLampuStatus] = useState({ merah: false, kuning: false, hijau: false });
 
-  // Polling real-time data dari Adafruit setiap 5 detik
+  
+
+  // Ambil status awal dari Adafruit HTTP API
   useEffect(() => {
-    const interval = setInterval(() => {
-      axios.get(route("get.latest"))
-        .then(res => setLatestData(res.data))
-        .catch(console.error);
-    }, 5000);
-    return () => clearInterval(interval);
+    const fetchInitialStatus = async () => {
+      try {
+        const headers = { "X-AIO-Key": key };
+        const feeds = ["led-merah", "led-kuning", "led-hijau"];
+        const requests = feeds.map(feed =>
+          axios.get(`https://io.adafruit.com/api/v2/${username}/feeds/${feed}/data?limit=1`, { headers })
+        );
+        const responses = await Promise.all(requests);
+        setLampuStatus({
+          merah: responses[0].data[0].value === "1",
+          kuning: responses[1].data[0].value === "1",
+          hijau: responses[2].data[0].value === "1",
+        });
+      } catch (error) {
+        console.error("Gagal mengambil status awal lampu:", error);
+      }
+    };
+    fetchInitialStatus();
   }, []);
+
+  useEffect(() => {
+    const client = mqtt.connect("wss://io.adafruit.com", {
+      username,
+      password: key,
+      connectTimeout: 4000,
+      clean: true,
+    });
+
+    const feeds = {
+      merah: `${username}/feeds/led-merah`,
+      kuning: `${username}/feeds/led-kuning`,
+      hijau: `${username}/feeds/led-hijau`,
+    };
+
+    client.on("connect", () => {
+      console.log("MQTT Connected");
+      Object.values(feeds).forEach((feed) => client.subscribe(feed));
+    });
+
+    client.on("message", (topic, message) => {
+      const payload = message.toString().toLowerCase();
+      const isOn = payload === "1" || payload === "true" || payload === "on";
+      const lampu = Object.keys(feeds).find((key) => feeds[key] === topic);
+      if (lampu) {
+        console.log(`MQTT UPDATE: ${lampu} => ${isOn}`);
+        setLampuStatus((prev) => ({ ...prev, [lampu]: isOn }));
+      }
+    });
+
+    return () => client.end();
+  }, []);
+
+  const toggleLamp = (lampu, status) => {
+    setLampuStatus((prev) => ({ ...prev, [lampu]: status }));
+    axios.post(route("lampu.toggle"), { lampu, status });
+  };
 
   const chartData = {
     labels: chart.labels,
@@ -62,23 +114,15 @@ export default function Dashboard() {
     },
   };
 
-  const handleAction = (routeName) => {
-    post(route(routeName), {
-      preserveScroll: true,
-      preserveState: true,
-    });
-  };
-
-  // ✅ Semua konten disimpan dalam variabel `content`
-  const content = (
+  return (
     <>
       <Head title="Dashboard" />
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gray-100">
         <Topbar>
-          <div className="flex flex-row space-x-4 text-sm text-gray-600">
-            <button onClick={() => handleAction("restart")} className="hover:text-blue-600">Restart</button>
+          <div className="flex justify-end text-sm text-gray-600 space-x-4">
+            <a href={route("profile.edit")} className="hover:text-blue-600">Profil</a>
             <span className="text-gray-400">|</span>
-            <button onClick={() => handleAction("logout")} className="hover:text-blue-600">Logout</button>
+            <a href={route("logout")} className="hover:text-blue-600">Logout</a>
           </div>
         </Topbar>
 
@@ -95,23 +139,20 @@ export default function Dashboard() {
           </section>
 
           <section className="bg-white p-6 rounded-lg shadow border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Indikator Lampu</h2>
-            <div className="flex flex-wrap items-center gap-4">
-              <StatusIndicator color="green" label="Normal" />
-              <StatusIndicator color="yellow" label="Waspada" />
-              <StatusIndicator color="red" label="Bahaya" />
-              <div className="w-full border-t my-4" />
-              <LampButton label="Nyalakan Lampu Hijau" color="green" onClick={() => handleAction("hijau")} />
-              <LampButton label="Nyalakan Lampu Kuning" color="yellow" onClick={() => handleAction("kuning")} />
-              <LampButton label="Nyalakan Lampu Merah" color="red" onClick={() => handleAction("merah")} />
+            <div className="flex flex-row justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Controller Lampu Traffic Light</h2>
+              <button onClick={() => axios.post(route("restart"))} className="text-sm text-gray-600 hover:text-blue-600">Restart</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-between w-full">
+              <ToggleSwitch label="Lampu Merah" isActive={lampuStatus.merah} onChange={(e) => toggleLamp("merah", e.target.checked)} color="peer-checked:bg-red-500" />
+              <ToggleSwitch label="Lampu Kuning" isActive={lampuStatus.kuning} onChange={(e) => toggleLamp("kuning", e.target.checked)} color="peer-checked:bg-yellow-500" />
+              <ToggleSwitch label="Lampu Hijau" isActive={lampuStatus.hijau} onChange={(e) => toggleLamp("hijau", e.target.checked)} color="peer-checked:bg-green-500" />
             </div>
           </section>
         </main>
       </div>
     </>
   );
-
-  return content;
 }
 
 const InfoCard = ({ title, value, color }) => (
@@ -120,35 +161,6 @@ const InfoCard = ({ title, value, color }) => (
     <p className={`text-3xl font-bold ${color}`}>{value}</p>
   </div>
 );
-
-const StatusIndicator = ({ color, label }) => {
-  const bgColor = {
-    green: "bg-green-500",
-    yellow: "bg-yellow-400",
-    red: "bg-red-500",
-  }[color];
-
-  return (
-    <div className="flex items-center gap-2 text-sm text-gray-700">
-      <div className={`w-5 h-5 rounded-full ${bgColor}`} />
-      <span>{label}</span>
-    </div>
-  );
-};
-
-const LampButton = ({ label, color, onClick }) => {
-  const bgColor = {
-    green: "bg-green-500 hover:bg-green-600",
-    yellow: "bg-yellow-400 hover:bg-yellow-500",
-    red: "bg-red-500 hover:bg-red-600",
-  }[color];
-
-  return (
-    <button onClick={onClick} className={`px-4 py-2 text-white rounded ${bgColor}`}>
-      {label}
-    </button>
-  );
-};
 
 const ChartLegend = () => (
   <div className="mt-4 flex items-center gap-6 text-sm text-gray-600">

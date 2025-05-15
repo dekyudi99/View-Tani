@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/lampu/kuning', [IoTController::class, 'lampuKuning'])->name('kuning');
     Route::post('/lampu/merah', [IoTController::class, 'lampuMerah'])->name('merah');
     Route::post('/restart', [IoTController::class, 'sendRestart'])->name('restart');
-
+    Route::post('/toggle', [IoTController::class, 'toggle'])->name('lampu.toggle');
 });
 
 require __DIR__.'/auth.php';
