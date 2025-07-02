@@ -18,9 +18,21 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        // TAMBAHKAN BARIS INI UNTUK DEBUGGING
+        // dd($request->user());
+
+        // Kode di bawah ini tidak akan dijalankan untuk sementara
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            
+            // === TAMBAHKAN BARIS INI ===
+            // Kirim data auth.user secara manual dan eksplisit ke halaman Profile/Edit.
+            // Ini memastikan halaman PASTI menerima data user.
+            'auth' => [
+                'user' => $request->user()
+            ]
+            // ============================
         ]);
     }
 

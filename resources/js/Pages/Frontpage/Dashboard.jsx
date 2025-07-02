@@ -3,6 +3,8 @@ import { router } from '@inertiajs/react';
 import StatsGrid from '../../Components/StatsGrid';
 import ControlPanel from '../../Components/ControlPanel';
 import TemperatureChart from '../../Components/TemperatureChart';
+import Dropdown from '@/Components/Dropdown';
+import { Link } from '@inertiajs/react';
 
 export default function Dashboard({ currentStats, temperatureHistory, errors }) {
   const deviceId = 'perangkat_1';
@@ -24,15 +26,14 @@ export default function Dashboard({ currentStats, temperatureHistory, errors }) 
     <div className="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-row justify-between items-baseline">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard ViewTani</h1>
-           <div className="flex justify-end text-sm text-gray-600 space-x-4">
-            <a href={route("profile.edit")} className="hover:text-blue-600">Profil</a>
+           <div className="flex flex-row text-sm text-gray-600 space-x-4">
+            <Link href={route("profile.edit")} className="hover:text-blue-600">Profil</Link>
             <span className="text-gray-400">|</span>
-            <form method="POST" action={route('logout')}>
-              <input type="hidden" name="_token" value={window.csrf_token} />
-              <button type="submit" className="hover:text-blue-600">Logout</button>
-            </form>
+            <Dropdown.Link href={route('logout')} method="post" as="button">
+              Log Out
+            </Dropdown.Link>
           </div>
         </div>
           
