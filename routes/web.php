@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     Route::get('/dashboard', [IoTController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/mode', [IoTController::class, 'setMode'])->name('dashboard.setMode');
     Route::post('/dashboard/control', [IoTController::class, 'sendControl'])->name('dashboard.control');
 });
 
